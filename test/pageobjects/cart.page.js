@@ -1,4 +1,3 @@
-import { $ } from '@wdio/globals'
 import Page from './page.js';
 
 class CartPage extends Page {
@@ -15,10 +14,6 @@ class CartPage extends Page {
         return $('.inventory_item_name');
     }
 
-    // getInventoryItemNameById(testId) {
-    //     return $(`[data-test="${testId}"] .inventory_item_name`);
-    // }
-
     async getProductContainerByItemTitleDataTest(dataTest) {
         return $(`//*[@data-test="${dataTest}"]/ancestor::div[contains(@class,"cart_item")]`);
     }
@@ -32,6 +27,10 @@ class CartPage extends Page {
         };
     }
 
+    async goToCheckout1() {
+        await this.checkOutBtn.waitForClickable();
+        await this.checkOutBtn.click();
+    }
 
     open() {
         return super.open('cart');

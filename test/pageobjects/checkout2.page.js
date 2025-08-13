@@ -1,4 +1,3 @@
-import { $ } from '@wdio/globals'
 import Page from './page.js';
 
 class Checkout2Page extends Page {
@@ -20,12 +19,17 @@ class Checkout2Page extends Page {
 
         return {
             name: await container.$('.inventory_item_name').getText(),
-            price: await container.$('.inventory_item_price').getText(),
+            price: this.removeDollarSign(await container.$('.inventory_item_price').getText()),
         };
     }
 
     get itemTotalWOTax() {
         return $('[data-test="subtotal-label"]');
+    }
+
+    async finishBtnClick() {
+        await this.finishBtn.waitForClickable();
+        await this.finishBtn.click();
     }
 
     open() {

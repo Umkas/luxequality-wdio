@@ -1,107 +1,147 @@
-import { browser, expect } from '@wdio/globals'
-import LoginPage from '../pageobjects/login.page.js'
-import InventoryPage from '../pageobjects/inventory.page.js'
-import CartPage from '../pageobjects/cart.page.js'
-import Checkout1Page from '../pageobjects/checkout1.page.js'
-import Checkout2Page from '../pageobjects/checkout2.page.js'
-import CheckoutCompletePage from '../pageobjects/checkout-complete.page.js'
+import Page from '../pageobjects/page.js'
+import loginPage from '../pageobjects/login.page.js'
+import inventoryPage from '../pageobjects/inventory.page.js'
+import cartPage from '../pageobjects/cart.page.js'
+import checkout1Page from '../pageobjects/checkout1.page.js'
+import checkout2Page from '../pageobjects/checkout2.page.js'
+import checkoutCompletePage from '../pageobjects/checkout-complete.page.js'
+import { generateCustomer, itemDataTest } from '../fixtures/test.data.js';
 
 
-describe('Checkout flow', () => {
-    it('should add product to cart and complete purchase', async () => {
+describe('Valid Checkout', () => {
+    const page = new Page();
 
-        // Precondition - login with valid credentials
-        await LoginPage.open();
-        await LoginPage.login('standard_user', 'secret_sauce');
-        await expect($('.title')).toHaveText('Products');
-        let currentUrl = await browser.getUrl();
-        //console.log(`current URL is - ${currentUrl}`);
-        await expect(currentUrl).toContain('/inventory');
+    beforeEach(async () => {
+        await loginPage.open();
+        await expect(browser).toHaveUrl('https://www.saucedemo.com/');
+        await loginPage.login('standard_user', 'secret_sauce');
+        await expect(loginPage.title).toHaveText('Products');
+        await expect(await loginPage.getCurrentUrl()).toContain('/inventory');
+    });
 
-        // const
-        const itemDataTest = "item-4-title-link";
-        const customer = {
-            firstname: "John",
-            lastname: "Snow",
-            zip: "07400",
-        }
+    afterEach(async function () {
+        const title = this.currentTest.title;
+        const status = this.currentTest.state;
+        console.log(` ${title} -> ${status === 'passed' ? 'passed' : 'failed'}`);
+        await page.logout();
+    });
 
+    it('should add a product to the cart when clicking the "Add to cart" button', async () => {
+        const product = await inventoryPage.addItemToCart(itemDataTest);
 
-        // step1 - Click on the "Add to cart" button near any product
-        // result - Number near the cart at the top right increase by 1, product is added to cart
+        await expect(inventoryPage.shoppingCartBadge).toBeDisplayed();
+        await expect(await inventoryPage.getCartItemCount()).toBe('1');
+    });
 
-        const product = await InventoryPage.getProductDataByTitleDataTest(itemDataTest);
-        await product.addToCartBtn.click();
+    it('should open the Cart page when clicking the "Cart" button and display the same product added at step 1', async () => {
+        const product = await inventoryPage.addItemToCart(itemDataTest);
+        await inventoryPage.openCart();
 
-        await expect(InventoryPage.shoppingCartBadge).toBeDisplayed(); // counter is visible
-        // console.log("check count");
-        await expect(await InventoryPage.getCartItemCount()).toBe('1'); // counter displayed '1'
+        await expect(cartPage.title).toHaveText('Your Cart');
+        await expect(await inventoryPage.getCurrentUrl()).toContain('/cart');
 
-
-        // step2 - Click on the "Cart" button at the top right corner
-        // result - Cart page is displayed, product are the same as was added at step 1
-
-        await InventoryPage.shoppingCartContainer.click();
-        await expect(CartPage.title).toHaveText('Your Cart');
-        currentUrl = await browser.getUrl();
-        //console.log(`current URL is - ${currentUrl}`);
-        await expect(currentUrl).toContain('/cart');
-
-        const productInCart = await CartPage.getProductDataByTitleDataTest(itemDataTest);
+        const productInCart = await cartPage.getProductDataByTitleDataTest(itemDataTest);
         await expect(productInCart.name).toBe(product.name);
 
-        // step3 - Click on the "Checkout" button
-        // result - Checkout form are displayed
-        await CartPage.checkOutBtn.click();
-        await expect(Checkout1Page.title).toHaveText('Checkout: Your Information');
-        currentUrl = await browser.getUrl();
-        await expect(currentUrl).toContain('/checkout-step-one');
+    });
 
 
-        // step4 - Fill the "First Name" field with valid data
-        // result - Data is entered to the field
-        await Checkout1Page.firstNameFld.setValue(customer.firstname);
-        await expect(Checkout1Page.firstNameFld).toHaveValue(customer.firstname);
+    it('should open the Checkout form when clicking the "Checkout" button', async () => {
+        const product = await inventoryPage.addItemToCart(itemDataTest);
+        await inventoryPage.openCart();
 
-        // step5 - Fill the "Second Name" field with valid data
-        // result - Data is entered to the field       
-        await Checkout1Page.lastNameFld.setValue(customer.lastname);
-        await expect(Checkout1Page.lastNameFld).toHaveValue(customer.lastname);
+        await cartPage.goToCheckout1();
+        await expect(checkout1Page.title).toHaveText('Checkout: Your Information');
+        await expect(await checkout1Page.getCurrentUrl()).toContain('/checkout-step-one');
+    });
 
-        // step6 - Fill the "Postal Code" field with valid data
-        // result - Data is entered to the field
-        await Checkout1Page.zipFld.setValue(customer.zip);
-        await expect(Checkout1Page.zipFld).toHaveValue(customer.zip);
+    it('should allow entering a valid First Name into the "First Name" field', async () => {
+        const product = await inventoryPage.addItemToCart(itemDataTest);
+        await inventoryPage.openCart();
 
-        // step7 - Click on the "Continue" button
-        // result - User is redirected to the "Overview" page, Products from step 1 is displayed. Total price = price of products from step 1
-        await Checkout1Page.continueBtn.click();
-        await expect(Checkout2Page.title).toHaveText('Checkout: Overview');
-        currentUrl = await browser.getUrl();
-        await expect(currentUrl).toContain('/checkout-step-two');
+        await cartPage.goToCheckout1();
 
-        const productInOverview = await Checkout2Page.getProductDataByTitleDataTest(itemDataTest);
+        const customer = generateCustomer();
+        await checkout1Page.setFirstName(customer.firstName);
+        await expect(checkout1Page.firstNameFld).toHaveValue(customer.firstName);
+    });
+
+    it('should allow entering a valid Second Name into the "Last Name" field', async () => {
+        const product = await inventoryPage.addItemToCart(itemDataTest);
+        await inventoryPage.openCart();
+
+        await cartPage.goToCheckout1();
+
+        const customer = generateCustomer();
+        await checkout1Page.setFirstName(customer.firstName);
+
+        await checkout1Page.setLastName(customer.lastName);
+        await expect(checkout1Page.lastNameFld).toHaveValue(customer.lastName);
+
+    });
+
+    it('should allow entering a valid Postal Code into the "Postal Code" field', async () => {
+        const product = await inventoryPage.addItemToCart(itemDataTest);
+        await inventoryPage.openCart();
+
+        await cartPage.goToCheckout1();
+
+        const customer = generateCustomer();
+        await checkout1Page.setFirstName(customer.firstName);
+        await checkout1Page.setLastName(customer.lastName);
+
+        await checkout1Page.setZip(customer.zip);
+        await expect(checkout1Page.zipFld).toHaveValue(customer.zip);
+    });
+
+    it('should redirect to the "Overview" page when clicking the "Continue" button, with products from step 1 displayed and correct total price', async () => {
+        const product = await inventoryPage.addItemToCart(itemDataTest);
+        await inventoryPage.openCart();
+
+        await cartPage.goToCheckout1();
+
+        const customer = generateCustomer();
+        await checkout1Page.fillCustomerInfo(customer);
+        await checkout1Page.goToCheckOut2();
+        await expect(checkout2Page.title).toHaveText('Checkout: Overview');
+        await expect(await checkout2Page.getCurrentUrl()).toContain('/checkout-step-two');
+
+        const productInOverview = await checkout2Page.getProductDataByTitleDataTest(itemDataTest);
         await expect(productInOverview.name).toBe(product.name);
-        await expect(Checkout2Page.itemTotalWOTax).toHaveText(`Item total: ${product.price}`);
+        await expect(checkout2Page.itemTotalWOTax).toHaveText(`Item total: $${product.price}`);
+    });
 
-        // step8 - Click on the "Finish" button
-        // User is redirected to the "Checkout Complete" page, "Thank you for your order!" message are displayed
-        await Checkout2Page.finishBtn.click();
-        await expect(CheckoutCompletePage.title).toHaveText('Checkout: Complete!');
-        currentUrl = await browser.getUrl();
-        await expect(currentUrl).toContain('/checkout-complete');
-        await expect(CheckoutCompletePage.completeHeader).toHaveText('Thank you for your order!');
+    it('should display the "Thank you for your order!" message on the "Checkout Complete" page after clicking the "Finish" button', async () => {
+        const product = await inventoryPage.addItemToCart(itemDataTest);
+        await inventoryPage.openCart();
 
+        await cartPage.goToCheckout1();
 
-        // step9 - Click on the "Back Home" button
-        // User is redirected to the inventory page. Products are displayed. Cart is empty
-        await CheckoutCompletePage.backHomeBtn.click();
-        await expect($('.title')).toHaveText('Products');
-        currentUrl = await browser.getUrl();
-        await expect(currentUrl).toContain('/inventory');
+        const customer = generateCustomer();
+        await checkout1Page.fillCustomerInfo(customer);
+        await checkout1Page.goToCheckOut2();
 
+        await checkout2Page.finishBtnClick();
+        await expect(checkoutCompletePage.title).toHaveText('Checkout: Complete!');
+        await expect(await checkoutCompletePage.getCurrentUrl()).toContain('/checkout-complete');
+        await expect(checkoutCompletePage.completeHeader).toHaveText('Thank you for your order!');
+    });
 
-    })
+    it('should return to the Inventory page when clicking the "Back Home" button, with products displayed and cart empty', async () => {
+        const product = await inventoryPage.addItemToCart(itemDataTest);
+        await inventoryPage.openCart();
+
+        await cartPage.goToCheckout1();
+
+        const customer = generateCustomer();
+        await checkout1Page.fillCustomerInfo(customer);
+        await checkout1Page.goToCheckOut2();
+        await checkout2Page.finishBtnClick();
+
+        await checkoutCompletePage.backHomeBtnClick();
+        await expect(loginPage.title).toHaveText('Products');
+        await expect(await inventoryPage.getCurrentUrl()).toContain('/inventory');
+    });
 })
 
 
