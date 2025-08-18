@@ -165,13 +165,15 @@ describe('Test Case Objective: Checkout', () => {
 
 
 describe('Test Case Objective: Cart', () => {
-    it('005 - should save the cart after logout', async () => {
-        // Precondition
+
+    before(async () => {
         await loginPage.open();
         await loginPage.login(loginData.valid.username, loginData.valid.password);
         await expect(loginPage.title).toHaveText('Products');
         await expect(await loginPage.getCurrentUrl()).toContain('/inventory');
+    });
 
+    it('005 - should save the cart after logout', async () => {
         const product = await inventoryPage.addItemToCart(itemDataTest);
         await expect(inventoryPage.shoppingCartBadge).toBeDisplayed();
         await expect(await inventoryPage.getCartItemCount()).toBe('1');
@@ -253,7 +255,6 @@ describe('Test Case Objective: Footer', () => {
             await browser.switchWindow('facebook.com');
             await expect(await browser.getUrl()).toContain('facebook.com');
 
-            // close opened tab
             await browser.closeWindow();
             const handles = await browser.getWindowHandles();
             await browser.switchToWindow(handles[0]);
@@ -264,7 +265,6 @@ describe('Test Case Objective: Footer', () => {
             await browser.switchWindow('linkedin.com');
             await expect(await browser.getUrl()).toContain('linkedin.com');
 
-            // close opened tab
             await browser.closeWindow();
             const handles = await browser.getWindowHandles();
             await browser.switchToWindow(handles[0]);
@@ -276,7 +276,6 @@ describe('Test Case Objective: Footer', () => {
             await browser.switchToWindow(handles[1]);
             await expect(await browser.getUrl()).toContain('x.com');
 
-            // close opened tab
             await browser.closeWindow();
             await browser.switchToWindow(handles[0]);
         });
