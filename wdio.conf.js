@@ -10,6 +10,7 @@ export const config = {
     capabilities: [{
         browserName: 'chrome' // or "firefox", "microsoftedge", "safari"
     }],
+    baseUrl: 'https://www.saucedemo.com',
     logLevel: 'info',
     bail: 0,
     waitforTimeout: 10000,
@@ -22,4 +23,5 @@ export const config = {
         timeout: 60000
     },
     globals: true,
+    injectGlobals: true,
 }

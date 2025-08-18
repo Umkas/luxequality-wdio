@@ -2,21 +2,17 @@ import Page from './page.js';
 
 class CartPage extends Page {
 
-    get title() {
-        return $('[data-test="title"]');
-    }
-
-    get checkOutBtn() {
-        return $('[data-test="checkout"]');
-    }
-
-    get inventoryItemName() {
-        return $('.inventory_item_name');
-    }
+    get title() { return $('[data-test="title"]'); }
+    get checkOutBtn() { return $('[data-test="checkout"]'); }
+    get inventoryItemName() { return $('.inventory_item_name'); }
+    get cartItems() { return $$('.cart_item'); }
+    get errorMsg() { return $('[data-test="error"]'); }
 
     async getProductContainerByItemTitleDataTest(dataTest) {
         return $(`//*[@data-test="${dataTest}"]/ancestor::div[contains(@class,"cart_item")]`);
     }
+
+
 
     async getProductDataByTitleDataTest(dataTest) {
         const container = await this.getProductContainerByItemTitleDataTest(dataTest);
