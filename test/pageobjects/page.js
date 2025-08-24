@@ -5,7 +5,6 @@ export default class Page {
     get menuList() { return $('.bm-item-list'); }
     get menuItems() { return $$('.bm-item-list a'); }
 
-    // menu options
     get menuAllItems() { return $('#inventory_sidebar_link'); }
     get menuAbout() { return $('#about_sidebar_link'); }
     get menuLogout() { return $('#logout_sidebar_link'); }

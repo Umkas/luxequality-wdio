@@ -10,6 +10,11 @@
     "@wdio/spec-reporter": "^9.18.0"
   },
   "scripts": {
-    "wdio": "wdio run ./wdio.conf.js"
+    "wdio": "wdio run ./wdio.conf.js",
+    "test:login": "wdio run ./wdio.conf.js --spec ./test/specs/login.spec.js",
+    "test:checkout": "wdio run ./wdio.conf.js --spec ./test/specs/checkout.spec.js",
+    "test:cart": "wdio run ./wdio.conf.js --spec ./test/specs/cart.spec.js",
+    "test:footer": "wdio run ./wdio.conf.js --spec ./test/specs/footer.spec.js",
+    "test:products": "wdio run ./wdio.conf.js --spec ./test/specs/products.spec.js"
   }
 }

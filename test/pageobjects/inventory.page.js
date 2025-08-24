@@ -6,7 +6,7 @@ class InventoryPage extends Page {
     get shoppingCartContainer() { return $('.shopping_cart_container'); }
     get shoppingCartBadge() { return $('[data-test="shopping-cart-badge"]'); }
     get sortDropdown() { return $('[data-test="product-sort-container"]'); }
-
+    get title() { return $('[data-test="title"]'); }
 
     async getProductContainerByItemTitleDataTest(dataTest) {
         return $(`//*[@data-test="${dataTest}"]/ancestor::div[contains(@class, "inventory_item")]`);
