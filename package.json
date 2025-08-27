@@ -2,6 +2,7 @@
   "name": "luxequality",
   "type": "module",
   "devDependencies": {
+    "@wdio/allure-reporter": "^9.0.0",
     "@faker-js/faker": "^9.9.0",
     "@wdio/cli": "^9.18.4",
     "@wdio/globals": "^9.17.0",

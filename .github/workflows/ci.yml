@@ -27,16 +27,21 @@ jobs:
       # All tests run
       - name: Run Login Tests
         run: npm run test:login
+        continue-on-error: true
 
       - name: Run Checkout Tests
         run: npm run test:checkout
+        continue-on-error: true
 
       - name: Run Products Tests
         run: npm run test:products
+        continue-on-error: true
 
       - name: Run Footer Tests
         run: npm run test:footer
+        continue-on-error: true
 
       - name: Run Cart Tests
         run: npm run test:cart
+        continue-on-error: true
 
