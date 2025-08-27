@@ -1,29 +1,71 @@
-name: WDIO Tests
+# name: WDIO Tests
+
+# on:
+#   push:
+#     branches:
+#       - main
+#       - master
+#       - develop
+#       - feature/**
+
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v3
+
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: 20
+
+#       - name: Install dependencies
+#         run: npm install
+
+#       # All tests run
+#       - name: Run WDIO tests
+#         run: npm run wdio
+
+name: CI
 
 on:
   push:
-    branches:
-      - main
-      - master
-      - develop
-      - feature/**
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # зафиксировали версию Ubuntu
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'  # зафиксируй Node, если нужно
 
-      - name: Install dependencies
-        run: npm install
+    - name: Install dependencies
+      run: npm ci  # или yarn install
 
-      # All tests run
-      - name: Run WDIO tests
-        run: npm run wdio
+    - name: Install Google Chrome Stable
+      run: |
+        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google.list
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable  # фиксирует stable версию
+
+    - name: Install Chromedriver (если не через service)
+      run: |
+        CHROME_VERSION=$(google-chrome --version | cut -d ' ' -f 3 | cut -d '.' -f 1-3)
+        wget https://chromedriver.storage.googleapis.com/$CHROME_VERSION/chromedriver_linux64.zip
+        unzip chromedriver_linux64.zip
+        sudo mv chromedriver /usr/bin/chromedriver
+        sudo chmod +x /usr/bin/chromedriver
+
+    - name: Run WDIO tests
+      run: npx wdio run wdio.conf.js
+
