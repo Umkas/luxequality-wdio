@@ -1,65 +1,102 @@
-name: WDIO Tests
+# name: WDIO Tests
+
+# on:
+#   push:
+#     branches:
+#       - main
+#       - master
+#       - develop
+#       - feature/**
+
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v3
+
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: 20
+
+#       - name: Install dependencies
+#         run: npm install
+
+#       # All tests run
+#       - name: Run Login Tests
+#         run: |
+#           npm run test:login > login_tests.log 2>&1
+#           echo "LOGIN_EXIT_CODE=$?" >> $GITHUB_ENV
+#         continue-on-error: true
+
+#       - name: Run Checkout Tests
+#         run: |
+#           npm run test:checkout > checkout_tests.log 2>&1
+#           echo "CHECKOUT_EXIT_CODE=$?" >> $GITHUB_ENV
+#         continue-on-error: true
+
+#       - name: Run Products Tests
+#         run: |
+#           npm run test:products > products_tests.log 2>&1
+#           echo "PRODUCTS_EXIT_CODE=$?" >> $GITHUB_ENV
+#         continue-on-error: true
+
+#       - name: Run Footer Tests
+#         run: |
+#           npm run test:footer > footer_tests.log 2>&1
+#           echo "FOOTER_EXIT_CODE=$?" >> $GITHUB_ENV
+#         continue-on-error: true
+
+#       - name: Run Cart Tests
+#         run: |
+#           npm run test:cart > cart_tests.log 2>&1
+#           echo "CART_EXIT_CODE=$?" >> $GITHUB_ENV
+#         continue-on-error: true
+
+#       - name: Check Test Results
+#         run: |
+#           if [ "$LOGIN_EXIT_CODE" != "0" ] || [ "$CHECKOUT_EXIT_CODE" != "0" ] || [ "$PRODUCTS_EXIT_CODE" != "0" ] || [ "$FOOTER_EXIT_CODE" != "0" ] || [ "$CART_EXIT_CODE" != "0" ]; then
+#           echo "Some tests failed. Check logs for details."
+#             exit 1
+#           else
+#             echo "All tests passed."
+#           fi
+
+name: CI
 
 on:
   push:
-    branches:
-      - main
-      - master
-      - develop
-      - feature/**
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        suite: [login, checkout, products, footer, cart]
+      fail-fast: false  # Продолжать остальные тесты, даже если один упадёт
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
 
-      - name: Install dependencies
-        run: npm install
+    - name: Install dependencies
+      run: npm ci
 
-      # All tests run
-      - name: Run Login Tests
-        run: |
-          npm run test:login > login_tests.log 2>&1
-          echo "LOGIN_EXIT_CODE=$?" >> $GITHUB_ENV
-        continue-on-error: true
+    - name: Install Google Chrome Stable
+      run: |
+        wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google.list
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
 
-      - name: Run Checkout Tests
-        run: |
-          npm run test:checkout > checkout_tests.log 2>&1
-          echo "CHECKOUT_EXIT_CODE=$?" >> $GITHUB_ENV
-        continue-on-error: true
-
-      - name: Run Products Tests
-        run: |
-          npm run test:products > products_tests.log 2>&1
-          echo "PRODUCTS_EXIT_CODE=$?" >> $GITHUB_ENV
-        continue-on-error: true
-
-      - name: Run Footer Tests
-        run: |
-          npm run test:footer > footer_tests.log 2>&1
-          echo "FOOTER_EXIT_CODE=$?" >> $GITHUB_ENV
-        continue-on-error: true
-
-      - name: Run Cart Tests
-        run: |
-          npm run test:cart > cart_tests.log 2>&1
-          echo "CART_EXIT_CODE=$?" >> $GITHUB_ENV
-        continue-on-error: true
-
-      - name: Check Test Results
-        run: |
-          if [ "$LOGIN_EXIT_CODE" != "0" ] || [ "$CHECKOUT_EXIT_CODE" != "0" ] || [ "$PRODUCTS_EXIT_CODE" != "0" ] || [ "$FOOTER_EXIT_CODE" != "0" ] || [ "$CART_EXIT_CODE" != "0" ]; then
-          echo "Some tests failed. Check logs for details."
-            exit 1
-          else
-            echo "All tests passed."
-          fi
+    - name: Run WDIO tests for ${{ matrix.suite }}
+      run: npm run test:${{ matrix.suite }}
