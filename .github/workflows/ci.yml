@@ -25,10 +25,18 @@ jobs:
         run: npm install
 
       # All tests run
-      - name: Run WDIO tests
+      - name: Run Login Tests
         run: npm run test:login
+
+      - name: Run Checkout Tests
         run: npm run test:checkout
+
+      - name: Run Products Tests
         run: npm run test:products
+
+      - name: Run Footer Tests
         run: npm run test:footer
+
+      - name: Run Cart Tests
         run: npm run test:cart
 
