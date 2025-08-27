@@ -26,22 +26,40 @@ jobs:
 
       # All tests run
       - name: Run Login Tests
-        run: npm run test:login
+        run: |
+          npm run test:login > login_tests.log 2>&1
+          echo "LOGIN_EXIT_CODE=$?" >> $GITHUB_ENV
         continue-on-error: true
 
       - name: Run Checkout Tests
-        run: npm run test:checkout
+        run: |
+          npm run test:checkout > checkout_tests.log 2>&1
+          echo "CHECKOUT_EXIT_CODE=$?" >> $GITHUB_ENV
         continue-on-error: true
 
       - name: Run Products Tests
-        run: npm run test:products
+        run: |
+          npm run test:products > products_tests.log 2>&1
+          echo "PRODUCTS_EXIT_CODE=$?" >> $GITHUB_ENV
         continue-on-error: true
 
       - name: Run Footer Tests
-        run: npm run test:footer
+        run: |
+          npm run test:footer > footer_tests.log 2>&1
+          echo "FOOTER_EXIT_CODE=$?" >> $GITHUB_ENV
         continue-on-error: true
 
       - name: Run Cart Tests
-        run: npm run test:cart
+        run: |
+          npm run test:cart > cart_tests.log 2>&1
+          echo "CART_EXIT_CODE=$?" >> $GITHUB_ENV
         continue-on-error: true
 
+      - name: Check Test Results
+        run: |
+          if [ "$LOGIN_EXIT_CODE" != "0" ] || [ "$CHECKOUT_EXIT_CODE" != "0" ] || [ "$PRODUCTS_EXIT_CODE" != "0" ] || [ "$FOOTER_EXIT_CODE" != "0" ] || [ "$CART_EXIT_CODE" != "0" ]; then
+          echo "Some tests failed. Check logs for details."
+            exit 1
+          else
+            echo "All tests passed."
+          fi
