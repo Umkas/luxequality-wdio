@@ -26,5 +26,9 @@ jobs:
 
       # All tests run
       - name: Run WDIO tests
-        run: npm run wdio
+        run: npm run test:login
+        run: npm run test:checkout
+        run: npm run test:products
+        run: npm run test:footer
+        run: npm run test:cart
 
