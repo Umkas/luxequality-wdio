@@ -1,5 +1,5 @@
 import loginPage from '../pageobjects/login.page.js'
-import { generateCustomer, itemDataTest, loginData, EXPECTED_MENU } from '../fixtures/test.data.js';
+import { loginData, } from '../fixtures/test.data.js';
 
 export function removeDollarSign(price) {
     return price.replace('$', '');
